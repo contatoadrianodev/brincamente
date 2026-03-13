@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 213 100% 97%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 43 96% 56%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 270 95% 75%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground font-sans; }
+  button { @apply cursor-pointer; }
+}
+
+@layer components {
+  .game-card {
+    @apply bg-white rounded-3xl shadow-lg border-2 border-white hover:border-brand-blue
+           transition-all duration-200 hover:shadow-xl hover:-translate-y-1 cursor-pointer;
+  }
+  .btn-primary {
+    @apply bg-brand-blue text-white font-bold rounded-2xl px-6 py-3
+           hover:bg-blue-600 active:scale-95 transition-all shadow-md;
+  }
+  .btn-secondary {
+    @apply bg-brand-yellow text-gray-800 font-bold rounded-2xl px-6 py-3
+           hover:bg-yellow-400 active:scale-95 transition-all shadow-md;
+  }
+  .btn-success {
+    @apply bg-brand-green text-white font-bold rounded-2xl px-6 py-3
+           hover:bg-green-600 active:scale-95 transition-all shadow-md;
+  }
+  .star-badge {
+    @apply inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 font-bold
+           rounded-full px-3 py-1 text-sm;
+  }
+  .coin-badge {
+    @apply inline-flex items-center gap-1 bg-orange-100 text-orange-700 font-bold
+           rounded-full px-3 py-1 text-sm;
+  }
+  .level-badge {
+    @apply inline-flex items-center gap-1 bg-purple-100 text-purple-700 font-bold
+           rounded-full px-3 py-1 text-sm;
+  }
+  .page-child {
+    @apply min-h-screen bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100;
+  }
+  .page-parent {
+    @apply min-h-screen bg-gray-50;
+  }
+}
