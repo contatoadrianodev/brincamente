@@ -18,15 +18,15 @@ export default function AdminMetrics() {
         supabase.from('game_sessions').select('*', { count: 'exact', head: true }),
       ])
       const { data: sess } = await supabase.from('game_sessions').select('score, completed')
-      const completed = sess?.filter(s => s.completed).length ?? 0
-      const avgScore = sess?.length ? Math.round(sess.reduce((a, s) => a + s.score, 0) / sess.length) : 0
+      const completed = sess?.filter((s: { completed: boolean }) => s.completed).length ?? 0
+      const avgScore = sess?.length ? Math.round(sess.reduce((a: number, s: { score: number }) => a + s.score, 0) / sess.length) : 0
       setStats({ users: users ?? 0, profiles: profiles ?? 0, sessions: sessions ?? 0, completed, avgScore })
 
-      const { data: games } = await supabase.from('games').select('name, type')
+      const { data: games } = await supabase.from('games').select('id, name, type')
       const { data: gsess } = await supabase.from('game_sessions').select('game_id')
       const counts: Record<string, number> = {}
-      gsess?.forEach(s => { counts[s.game_id] = (counts[s.game_id] ?? 0) + 1 })
-      setGameData((games ?? []).map(g => ({ name: g.name.substring(0, 15), partidas: counts[g.id as any] ?? 0 })))
+      gsess?.forEach((s: { game_id: string }) => { counts[s.game_id] = (counts[s.game_id] ?? 0) + 1 })
+      setGameData((games ?? []).map((g: { id: string; name: string; type: string }) => ({ name: g.name.substring(0, 15), partidas: counts[g.id] ?? 0 })))
     }
     load()
   }, [])

@@ -12,7 +12,7 @@ export default function AdminQuestions() {
   const [form, setForm] = useState({ question:'', option_a:'', option_b:'', option_c:'', option_d:'', correct_option:'a', difficulty: 1 })
 
   async function load() {
-    const { data } = await supabase.from('quiz_questions').select('*').order('created_at' as any, { ascending: false })
+    const { data } = await supabase.from('quiz_questions').select('*')
     setQuestions(data ?? [])
   }
 
