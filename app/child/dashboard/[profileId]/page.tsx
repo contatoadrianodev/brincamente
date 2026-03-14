@@ -1,12 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { ChildProfile } from '@/types'
 import { getAvatarEmoji, xpForNextLevel } from '@/utils/gamification'
 import Link from 'next/link'
-import { Trophy, Flame, Star, Coins } from 'lucide-react'
 
 const CATEGORIES = [
   { id: 'memory',   name: 'Memória',    emoji: '🧠', color: 'from-purple-400 to-purple-600', href: 'memory' },
