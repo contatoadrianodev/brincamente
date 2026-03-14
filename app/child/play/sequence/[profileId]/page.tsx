@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { calculateStars } from '@/utils/gamification'
+import { createClient } from '@/lib/supabase/client'
+import { calculateXP, calculateCoins, calculateStars } from '@/utils/gamification'
 import { ArrowLeft } from 'lucide-react'
 
 type Level = { sequence: (string | number)[]; missing: number; options: (string | number)[] }
@@ -38,6 +39,7 @@ function genEmojiLevel(): Level {
 export default function SequenceGame() {
   const { profileId } = useParams()
   const router = useRouter()
+  const supabase = createClient()
 
   const [difficulty, setDifficulty] = useState(1)
   const [level, setLevel] = useState<Level>(() => genNumLevel(1))
@@ -53,13 +55,33 @@ export default function SequenceGame() {
     setSelected(null); setAnswered(false)
   }
 
+  async function saveResult(finalScore: number) {
+    const xp    = calculateXP(finalScore, 8 - finalScore, difficulty)
+    const coins = calculateCoins(Math.round((finalScore / 8) * 100), difficulty)
+    const stars = calculateStars(finalScore, 8)
+
+    await supabase.rpc('save_game_result', {
+      p_profile_id: profileId,
+      p_game_type:  'sequence',
+      p_score:      Math.round((finalScore / 8) * 100),
+      p_correct:    finalScore,
+      p_wrong:      8 - finalScore,
+      p_duration:   0,
+      p_xp:         xp,
+      p_coins:      coins,
+      p_stars:      stars,
+    })
+  }
+
   function answer(opt: string | number) {
     if (answered) return
     setSelected(opt); setAnswered(true)
-    const correct = opt === level.sequence[level.missing]
-    if (correct) setScore(s => s + 1)
-    setTotal(t => t + 1)
-    if (total + 1 >= 8) { setDone(true) }
+    const isCorrect = opt === level.sequence[level.missing]
+    const newScore = isCorrect ? score + 1 : score
+    if (isCorrect) setScore(newScore)
+    const newTotal = total + 1
+    setTotal(newTotal)
+    if (newTotal >= 8) { setDone(true); saveResult(newScore) }
   }
 
   useEffect(() => { newLevel() }, [mode, difficulty])

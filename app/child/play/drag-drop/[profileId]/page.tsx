@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { calculateStars } from '@/utils/gamification'
+import { calculateXP, calculateCoins, calculateStars } from '@/utils/gamification'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 
 const PAIRS = [
@@ -40,6 +40,24 @@ export default function DragDropGame() {
     setMatched({}); setScore(0); setWrong(0); setDone(false)
   }, [round])
 
+  async function saveResult(finalScore: number, finalWrong: number) {
+    const xp    = calculateXP(finalScore, finalWrong, 1)
+    const coins = calculateCoins(Math.round((finalScore / pairs.length) * 100), 1)
+    const stars = calculateStars(finalScore, pairs.length)
+
+    await supabase.rpc('save_game_result', {
+      p_profile_id: profileId,
+      p_game_type:  'drag_drop',
+      p_score:      Math.round((finalScore / pairs.length) * 100),
+      p_correct:    finalScore,
+      p_wrong:      finalWrong,
+      p_duration:   0,
+      p_xp:         xp,
+      p_coins:      coins,
+      p_stars:      stars,
+    })
+  }
+
   function onDrop(word: string) {
     if (!dragging) return
     const pair = pairs.find(p => p.word === word)
@@ -48,11 +66,15 @@ export default function DragDropGame() {
     setFeedback({ word, ok })
     setTimeout(() => setFeedback(null), 800)
     if (ok) {
-      setScore(s => s + 1)
+      const newScore = score + 1
+      setScore(newScore)
       setMatched(m => ({ ...m, [word]: true }))
       setEmojis(e => e.filter(x => x !== dragging))
       const newMatched = Object.keys(matched).length + 1
-      if (newMatched >= pairs.length) setDone(true)
+      if (newMatched >= pairs.length) {
+        setDone(true)
+        saveResult(newScore, wrong)
+      }
     } else {
       setWrong(w => w + 1)
     }

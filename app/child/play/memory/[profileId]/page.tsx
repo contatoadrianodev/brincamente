@@ -79,20 +79,22 @@ export default function MemoryGame() {
   }
 
   async function saveResult() {
-    const xp = calculateXP(matched, wrong, difficulty + 1)
-    const coins = calculateCoins(Math.round((matched / (cards.length / 2)) * 100), difficulty + 1)
-    const stars = calculateStars(matched, cards.length / 2)
+    const total = cards.length / 2
+    const xp    = calculateXP(matched, wrong, difficulty + 1)
+    const coins = calculateCoins(Math.round((matched / total) * 100), difficulty + 1)
+    const stars = calculateStars(matched, total)
 
-    const { data: game } = await supabase.from('games').select('id').eq('type', 'memory').single()
-    if (game) {
-      await supabase.from('game_sessions').insert({
-        child_profile_id: profileId, game_id: game.id,
-        score: Math.round((matched / (cards.length / 2)) * 100),
-        correct_answers: matched, wrong_answers: wrong,
-        duration_seconds: time, completed: true,
-      })
-      await supabase.rpc('add_child_xp', { profile_id: profileId, xp_amount: xp }).catch(() => {})
-    }
+    await supabase.rpc('save_game_result', {
+      p_profile_id: profileId,
+      p_game_type:  'memory',
+      p_score:      Math.round((matched / total) * 100),
+      p_correct:    matched,
+      p_wrong:      wrong,
+      p_duration:   time,
+      p_xp:         xp,
+      p_coins:      coins,
+      p_stars:      stars,
+    })
   }
 
   useEffect(() => { if (done) saveResult() }, [done])

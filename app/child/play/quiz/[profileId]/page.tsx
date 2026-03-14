@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
-import { calculateXP, calculateStars } from '@/utils/gamification'
+import { calculateXP, calculateCoins, calculateStars } from '@/utils/gamification'
 import { ArrowLeft } from 'lucide-react'
 
 // Built-in questions (fallback when DB is empty)
@@ -53,16 +53,21 @@ export default function QuizGame() {
   }
 
   async function saveResult() {
-    const xp = calculateXP(correct, wrong, 1)
-    const { data: game } = await supabase.from('games').select('id').eq('type', 'quiz').single()
-    if (game) {
-      await supabase.from('game_sessions').insert({
-        child_profile_id: profileId, game_id: game.id,
-        score: Math.round((correct / total) * 100),
-        correct_answers: correct, wrong_answers: wrong,
-        duration_seconds: 0, completed: true,
-      })
-    }
+    const xp    = calculateXP(correct, wrong, 1)
+    const coins = calculateCoins(Math.round((correct / total) * 100), 1)
+    const stars = calculateStars(correct, total)
+
+    await supabase.rpc('save_game_result', {
+      p_profile_id: profileId,
+      p_game_type:  'quiz',
+      p_score:      Math.round((correct / total) * 100),
+      p_correct:    correct,
+      p_wrong:      wrong,
+      p_duration:   0,
+      p_xp:         xp,
+      p_coins:      coins,
+      p_stars:      stars,
+    })
   }
 
   const stars = calculateStars(correct, total)
